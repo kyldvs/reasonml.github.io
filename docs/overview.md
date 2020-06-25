@@ -6,16 +6,16 @@ This is an overview of most language features in Reason. It does not explain
 them in detail, but should serve as a quick reference. Please see the guides
 on the left for additional details about each feature.
 
-## Bindings
+## Let Bindings
 
 Feature                         | Example
 --------------------------------|----------
 String value                    | `let hi = "Hello World";`
 Int value                       | `let count = 42;`
-Type annotation                 | `let count: int = 42;`
+Type annotation on binding      | `let count: int = 42;`
 
 
-## Built In Values
+## Built In Types
 
 Feature                         | Example
 --------------------------------|----------
@@ -53,10 +53,11 @@ Float                           | `23.0`, `-23.0`
 Float operations                | `23.0 +. 1.0 -. 7.0 *. 2.0 /. 5.0`
 Float exponentiation            | `2.0 ** 3.0`
 
-## Logical operators
+## Boolean Values And Logical Operations
 
 Feature                         | Example
 --------------------------------|----------
+Boolean Values                  | `true`, `false`
 Comparison                      | `>`, `<`, `>=`, `<=`
 Boolean operations              | `!`, `&&`, <code>&#124;&#124;</code>
 Reference equality              | `===`, `!==`
@@ -78,10 +79,10 @@ Recursive functions             | `let rec infinite = () => infinite();`
 
 Feature                         | Example
 --------------------------------|----------
-Function currying               | `let divideTen = divide(10); divideTen(5); // 2`
-Currying specific args          | `let half = divide(_, 2); half(10); // 5`
-Default arguments               | `let divide = (~a=100, ~b) => a / b;`
+Partial application             | `let divideTen = divide(10); divideTen(5); // 2`
+Partially applying out of order | `let half = divide(_, 2); half(10); // 5`
 Optional arguments              | `let print = (~prefix=?, text) => {...};`
+Optional arguments with default | `let divide = (~a=100, ~b) => a / b;`
 Function chaining (pipe)        | <code>32 &#124;> half &#124;> half; // 8</code>
 
 ## Function Types
@@ -89,7 +90,8 @@ Function chaining (pipe)        | <code>32 &#124;> half &#124;> half; // 8</code
 Feature                         | Example
 --------------------------------|----------
 Inline typing                   | `let divide = (a: int, b: int): int => a / b;`
-Standalone type                 | `type fn = (int, int) => int;`
+Standalone type                 | `type intOperation = (int, int) => int;`
+Using standalone type           | `let divide : intOperation = (a, b) => a / b;`
 Typing optional arguments       | `let print = (~prefix: option(string)=?, text) => {...};`
 
 ## Basic Structures
@@ -123,6 +125,18 @@ There are also other libraries that will provide their own implementation of
 these data structures. Check the style guide of the project you are
 working in to determine which module to use.
 
+## Type Annotations
+
+Any expression or argument may include a "type annotation". In most cases, type annotations
+are not necessary and the compiler will infer the types automatically. You may include
+type annotations to verify your own understanding against what the compiler infers.
+
+Feature                         | Example
+--------------------------------|----------
+Expression type annotation      | `let x = (someExpressionHere : int)`
+Annotation on let binding       | `let x: int = someExpressionHere;`
+Argument/return value annotation| `let addOne = (a: int):int => a + 1;`
+
 ## Type Parameters
 
 Types can be made generic with type parameters.
@@ -150,21 +164,22 @@ With type parameters            | `type t('a) = {foo: 'a, bar: string};`
 
 ## Variants
 
-Variants are used to represent different variations of something. This feature
-is sometimes called disjoint unions or tagged unions in other languages.
+Variant types model values that may assume one of many known forms. This
+feature is similar to "enums" in other languages, but each variant form may
+optionally specify data that is carried along with each (capitalized) name.
 
 Feature                         | Example
 --------------------------------|----------
 Variant definition              | <code>type t = &#124; Foo &#124; Bar;</code>
 Variants with args              | <code>type t = &#124; Foo(string) &#124; Bar(int);</code>
-With type parameters            | <code>type t('a) = &#124; Foo('a) &#124; Bar(int);</code>
-Using a variant                 | `let x = Foo("Hello");`
+With type parameters            | <code>type t('a) = &#124; One('a) &#124; Two('a, 'a);</code>
+Using a variant                 | `let x = Two("Hello", "hello");`
 
 ## Options
 
-Options are an important variant that represent the presence or absence of a
-value. In other languages this can be thought of like null values. Options are
-used often and are important to learn.
+Options are a built-in variant that represent the presence or absence of a
+value. It is similar to the concept of "nullable" values in other languages. Options
+are used often.
 
 Feature                         | Example
 --------------------------------|----------
@@ -195,8 +210,10 @@ Matching literals               | <code>&#124; "Hello" => handleHello()</code>
 
 ## Unit
 
-Units are typically used for side-effects. They represent something that never
-has any meaningful value (this is distinct from options which may have a value).
+The special "unit" value (written `()`) represents something that never has any
+meaningful value (this is distinct from options which may have a value).
+Functions usually indicate that they perform a side effect by returning a unit
+value (which is evident in the function type).
 
 Feature                         | Example
 --------------------------------|----------
@@ -233,13 +250,15 @@ bool for break-like behavior: `let break = ref(false); while (!break^ && conditi
 
 ## Modules
 
-Modules are a way to group things. Each Reason file implicitly creates a module
-of the same name. Modules can be nested.
+Modules are a way to group types and values. Each Reason file implicitly
+creates a module of the same name. Each `type` definition and `let` binding in
+a module automatically becomes a "member" of that module which can be accessed
+by other modules.  Modules can also be nested using the `module` keyword.
 
 Feature                         | Example
 --------------------------------|----------
 Module creation                 | `module Foo = { let bar = 10; };`
-Module access                   | `Foo.bar;`
+Module member access            | `Foo.bar;`
 Module types                    | `module type Foo = { let bar: int; };`
 
 ## Functors
